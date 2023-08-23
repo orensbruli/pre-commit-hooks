@@ -199,3 +199,10 @@
     language: python
     types: [text]
     stages: [commit, push, manual]
+-   id: check-lfs-patterns
+    name: check lfs patterns
+    description: checks that the files with lfs patterns are tracked by git lfs.
+    entry: check-lfs-patterns
+    language: python
+    types: [file]
+    stages: [commit, push, manual]

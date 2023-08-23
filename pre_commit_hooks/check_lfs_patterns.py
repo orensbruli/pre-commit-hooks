@@ -3,13 +3,14 @@ from __future__ import annotations
 import argparse
 import subprocess
 import re
+from fnmatch import fnmatch
 from typing import Sequence, List
 
-from pre_commit_hooks.util import added_files
+from pre_commit_hooks.util import added_files, cmd_output
 
 
 def get_lfs_patterns() -> List[str]:
-    output = subprocess.check_output(["git", "lfs", "track"], encoding='utf-8').strip()
+    output = cmd_output("git", "lfs", "track").strip()
     # Extract patterns based on the provided format
     return re.findall(r'^\s*(\*\.[A-Za-z0-9]+)', output, re.MULTILINE)
 
@@ -32,13 +33,17 @@ def check_files_against_lfs_patterns(
 ) -> int:
     retv = 0
     lfs_patterns = get_lfs_patterns()
-    if not enforce_all:
-        filenames = set(filenames) & added_files()
-
+    if enforce_all:
+        print("Enforcing all files are checked.")
+        filenames = set(cmd_output('git', 'ls-files').splitlines())
+    print(f"enforce_all: {enforce_all}")
     print(f"Checking {len(lfs_patterns)} LFS patterns against {len(filenames)} files.")
+    print(f"Patterns: {lfs_patterns}")
+    print("Files: ")
+    print("\n".join(filenames))
     for filename in filenames:
         for pattern in lfs_patterns:
-            if re.match(pattern, filename) and not check_file_in_lfs(filename):
+            if fnmatch(pattern, filename) and not check_file_in_lfs(filename):
                 print(f"File '{filename}' matches pattern '{pattern}' but is not tracked by LFS.")
                 retv = 1
                 break
@@ -47,13 +52,14 @@ def check_files_against_lfs_patterns(
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    print(f"Running {__file__} with argv: {argv}")
     parser = argparse.ArgumentParser()
     parser.add_argument(
         'filenames', nargs='*',
         help='Filenames pre-commit believes are changed.',
     )
     parser.add_argument(
-        '--enforce-all', action='store_true',
+        '--all-files', action='store_true',
         help='Enforce all files are checked, not just staged files.',
     )
 
@@ -61,7 +67,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     return check_files_against_lfs_patterns(
         args.filenames,
-        enforce_all=args.enforce_all
+        enforce_all=args.all_files
     )
 
 
