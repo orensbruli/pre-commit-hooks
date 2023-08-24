@@ -39,15 +39,11 @@ def check_files_against_lfs_patterns(
     print(f"enforce_all: {enforce_all}")
     print(f"Checking {len(lfs_patterns)} LFS patterns against {len(filenames)} files.")
     print(f"Patterns: {lfs_patterns}")
-    print("Files: ")
-    print("\n".join(filenames))
     for filename in filenames:
         for pattern in lfs_patterns:
             if fnmatch(pattern, filename) and not check_file_in_lfs(filename):
                 print(f"File '{filename}' matches pattern '{pattern}' but is not tracked by LFS.")
                 retv = 1
-                break
-
     return retv
 
 
