@@ -46,7 +46,7 @@ def check_files_against_lfs_patterns(
         print("Files matching these patterns must be tracked by LFS.")
         print("\t"+"\n\t".join(non_tracked_lfs_files))
         print("If these files already exist in the repository, you can convert them to LFS with:")
-        print(f"  git lfs migrate import --include=\"{' '.join(non_tracked_lfs_files)}\" --no-rewrite")
+        print(f"  git lfs migrate import {' '.join(non_tracked_lfs_files)} --no-rewrite")
         print("If these files are new, you should check that you have lfs configured correctly:")
         print("  git lfs install")
         print("If it's installed you can track files with:")
